@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
+import webbrowser
 
 # Spotify API credentials
 client_id = "e9fb00b2739c4107843e3cd0fb2e4cef"
@@ -36,16 +37,32 @@ def plot_tracks(genre, tracks):
     # Extract track names and popularity scores
     track_names = [track['name'] for track in tracks]
     popularity_scores = [track['popularity'] for track in tracks]
+    track_urls = [track['external_urls']['spotify'] for track in tracks]
 
     # Plotting the graph
     plt.figure(figsize=(10, 6))
-    plt.bar(track_names, popularity_scores, color='#1DB954')  # Use Spotify green color
+    bars = plt.bar(track_names, popularity_scores, color='#1DB954')  # Use Spotify green color
     plt.xlabel('Track')
     plt.ylabel('Popularity Score')
     plt.title(f'Top 20 Tracks in {genre.capitalize()} Genre')
     plt.xticks(rotation=45, ha='right')
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.tight_layout()
+
+    # Function to handle click event on bar
+    def on_bar_click(event):
+        if event.inaxes == plt.gca():
+            for i, bar in enumerate(bars):
+                if bar.contains(event)[0]:
+                    url = track_urls[i]
+                    webbrowser.open(url)
+
+    # Connect the click event to the plot
+    plt.gcf().canvas.mpl_connect('button_press_event', on_bar_click)
+
+    # Add label to inform users that bars are clickable
+    plt.text(0.5, 1.07, "Click on a bar to open the corresponding song on Spotify", ha='center', transform=plt.gca().transAxes, fontsize=10)
+
     plt.show()
 
 # Create the main Tkinter window
