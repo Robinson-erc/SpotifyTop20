@@ -61,7 +61,7 @@ def plot_tracks(genre, tracks):
     plt.gcf().canvas.mpl_connect('button_press_event', on_bar_click)
 
     # Add label to inform users that bars are clickable
-    plt.text(0.5, 1.07, "Click on a bar to open the corresponding song on Spotify", ha='center', transform=plt.gca().transAxes, fontsize=10)
+    plt.text(0.5, 1.08, "Click on a bar to open the corresponding song on Spotify", ha='center', transform=plt.gca().transAxes, fontsize=10)
 
     plt.show()
 
