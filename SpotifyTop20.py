@@ -1,7 +1,7 @@
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
 import webbrowser
@@ -12,6 +12,11 @@ client_secret = "47be381b7b7740d699d088fc36ddcf26"
 spotipy_credentials = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
 sp = spotipy.Spotify(client_credentials_manager=spotipy_credentials)
 
+# Global variables to store track data
+genre = ""
+top_20_tracks = []
+track_dropdown = None  # Global variable for track dropdown menu
+
 # Function to get the top 20 tracks for the selected genre
 def get_top_20_tracks(genre):
     results = sp.search(q=f'genre:"{genre}"', type='track', limit=20)
@@ -20,6 +25,7 @@ def get_top_20_tracks(genre):
 
 # Function to handle the submit button click event
 def submit_genre():
+    global genre, top_20_tracks
     genre = genre_entry.get().strip()
     if genre:
         # If the genre is provided, proceed with the action (e.g., plot)
@@ -32,11 +38,13 @@ def submit_genre():
     else:
         messagebox.showwarning("Missing Genre", "Please enter a genre.")
 
-# Function to plot tracks
+# Function to plot tracks and create dropdown menu
 def plot_tracks(genre, tracks):
+    global track_dropdown  # Declare as global to modify it within the function
     # Extract track names and popularity scores
     track_names = [track['name'] for track in tracks]
     popularity_scores = [track['popularity'] for track in tracks]
+    global track_urls
     track_urls = [track['external_urls']['spotify'] for track in tracks]
 
     # Plotting the graph
@@ -63,7 +71,27 @@ def plot_tracks(genre, tracks):
     # Add label to inform users that bars are clickable
     plt.text(0.5, 1.08, "Click on a bar to open the corresponding song on Spotify", ha='center', transform=plt.gca().transAxes, fontsize=10)
 
+    # Create dropdown menu
+    menu_frame = tk.Frame(root, bg='#191414')
+    menu_frame.pack(pady=10)
+    selected_track = tk.StringVar()
+    selected_track.set("Select a track")
+    track_dropdown = ttk.Combobox(menu_frame, textvariable=selected_track, values=track_names)
+    track_dropdown.pack(padx=10, pady=5)
+    open_track_button = tk.Button(menu_frame, text="Open Selected Track", command=open_selected_track, bg="#1db954", fg="white", font=("Arial", 12), relief=tk.FLAT)
+    open_track_button.pack(pady=5)
+
     plt.show()
+
+# Function to open selected track on Spotify
+def open_selected_track():
+    global track_dropdown  # Declare as global to access it
+    selected_track_index = track_dropdown.current()
+    if selected_track_index != -1:
+        url = track_urls[selected_track_index]
+        webbrowser.open(url)
+    else:
+        messagebox.showwarning("No Track Selected", "Please select a track from the dropdown menu.")
 
 # Create the main Tkinter window
 root = tk.Tk()
@@ -73,7 +101,7 @@ root.title("Top Tracks by Genre")
 root.configure(bg='#191414')
 
 # Create a label asking the user to enter a genre
-genre_label = tk.Label(root, text="Enter a genre such as 'pop', 'hip-hop', 'rock', etc.:", fg='white', bg='#191414')
+genre_label = tk.Label(root, text="Enter a genre such as 'pop', 'hip-hop', 'rock', etc.:", fg='#1DB954', bg='#191414', font=("Arial", 12, "bold"))
 genre_label.pack(pady=10)
 
 # Create an entry widget for the user to input the genre
